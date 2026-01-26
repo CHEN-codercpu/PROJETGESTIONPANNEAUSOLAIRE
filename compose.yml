@@ -1,0 +1,63 @@
+services:
+
+#La Partie de la Base de données
+  db:
+    #l'image que docker va chercher
+    image: mariadb:11.8.5-ubi9
+    #Always pour que la db redémarre dès qu'un problème ou un crash arrive
+    restart: always
+    #Ports par défaut de MariaDB
+    ports:
+      - "3306:3306"
+    #Création de volume pour stocker les données
+    volumes:
+      - mariadb_data:/var/lib/mysql 
+    environment:
+     #Le code admin que je définis
+      MARIADB_ROOT_PASSWORD: ciel
+    #Configuration de vérification de santé
+    healthcheck:
+    #Exécuter une commande ping pour vérifier que MARIADB est opérationnel
+      test: ["CMD", "mariadb-admin", "ping" , "-u", "root", "-pciel"]
+      #Vérifier la santé toutes les 10 secondes
+      interval: 10s
+      #timeout de 5 secondes pour la commande
+      timeout: 5s
+      #Nombre maximum de tentatives avant de considérer le service comme non sain
+      retries: 5
+    
+  # L'Adminer est un logiciel qui permet de gérer des databases
+  adminer:
+  # On va chercher l'image qu'on à besoin sur le docker Hub
+    image: adminer
+    # S'il plante il va toujours chercher à redémarrer
+    restart: always
+    # On définit les ports web standard pour pouvoir y accéder en localhost:8080
+    ports:
+      - "8080:8080"
+  
+
+
+  web:
+    # On va chercher l'image d'Apache sur docker hub
+    image: php:apache
+
+    restart: always
+    # Définitions des ports (8080 déjà pris par Adminer)
+    ports:
+      - "80:80"
+
+    # Définition de nouveaux volumes
+    volumes:
+      - ./www:/var/www/html
+    
+    # La commande Depends on vient dire que pour que le site fonctionne bien
+    # la db doit impérativement être en marche (condition: service_healthy)
+    depends_on:
+      db:
+        condition: service_healthy
+
+    command: docker-php-ext-install mysqli && apache2-foreground
+
+volumes:
+  mariadb_data:

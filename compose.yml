@@ -7,8 +7,11 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql 
     environment:
+      MARIADB_DATABASE: db_panneau_solaire
+      MARIADB_USER: Soleil
       # INDISPENSABLE : Le mot de passe maître pour que la DB démarre
       MARIADB_ROOT_PASSWORD: ciel
+      MARIADB_PASSWORD: meow
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-u", "root", "-pciel"]
       interval: 10s
@@ -22,7 +25,7 @@ services:
       - "8080:8080"
   
   web:
-    image: php:apache
+    build: .
     restart: always
     ports:
       - "80:80"
@@ -37,10 +40,8 @@ services:
     environment:
       - DB_HOST=db
       - DB_NAME=db_panneau_solaire
-      - DB_USER=Sofiane_Admin
-      - DB_PASSWORD=Sdicorat02005!
-      
-    command: docker-php-ext-install mysqli && apache2-foreground
+      - DB_USER=root
+      - DB_PASSWORD=ciel
 
 volumes:
   mariadb_data:

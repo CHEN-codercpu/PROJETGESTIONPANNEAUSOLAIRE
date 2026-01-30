@@ -1,7 +1,12 @@
 <?php
-include ('dbconnection.php');
+session_start();
 
+require_once 'dbconnection.php';
 
+if (!isset($_SESSION['user_id'])){
+    header("Location: login.php");
+    exit();
+}
 
 $tension_b =0;
 $temp_b = 0;

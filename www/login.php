@@ -1,53 +1,62 @@
 <?php
-session_start();
-
-require_once 'dbconnection.php';
+session_start(); 
+require_once 'dbconnection.php'; 
 
 $message = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST"){
-
-    if (!empty($_POST['login']) && !empty($_POST['pass'])) {
-
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-   $stmt = $dbh->prepare("SELECT * FROM Utilisateurs WHERE nom_utilisateur = ?");
+    // On vérifie que les champs sont remplis
+    if (!empty($_POST['login']) && !empty($_POST['pass'])) {
+        
+        // On prépare la requête pour chercher l'utilisateur
+        $stmt = $dbh->prepare("SELECT * FROM Utilisateurs WHERE nom_utilisateur = ?");
+        $stmt->execute([ $_POST['login'] ]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-   $stmt->execute([$_POST['login']]);
+        // On vérifie le mot de passe
+        if ($user && password_verify($_POST['pass'], $user['MotDePasse'])) {
+            
+            // --- SUCCÈS ---
+            // On enregistre l'utilisateur dans la session
+            $_SESSION['user_id'] = $user['idUtilisateurs'];
+            $_SESSION['pseudo'] = $user['nom_utilisateur'];
+            
+            // HOP ! On redirige vers le tableau de bord
+            header("Location: index.php");
+            exit();
+            
+        } else {
+	    sleep(1);
 
-   $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-   if ($user && password_verify($_POST['pass'], $user['MotDePasse'])) {
-
-    $_SESSION['user_id'] = $user['idUtilisateurs'];
-    $_SESSION['pseudo'] = $user['nom_utilsateur'];
-
-    header("Location: index.php");
-    exit();
-   }
-} else {
-
-    $message = "Mauvais identifiant ou mot de passe !";
-}
+            $message = "Mauvais identifiant ou mot de passe !";
+        }
+    } else {
+        $message = "Veuillez remplir tous les champs.";
+    }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Connexion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Gestion Solaire</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f9; }
-        form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
-        input { display: block; width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%; }
-        button:hover { background-color: #0056b3; }
-        .error { color: red; margin-bottom: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #e9ecef; margin: 0; }
+        form { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
+        h2 { color: #333; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        button { background-color: #28a745; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; transition: background 0.3s; }
+        button:hover { background-color: #218838; }
+        .error { color: #dc3545; background-color: #f8d7da; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <form method="POST">
-        <h2>Connexion</h2>
+        <h2>Espace Connexion</h2>
         
         <?php if($message) { echo "<p class='error'>$message</p>"; } ?>
         

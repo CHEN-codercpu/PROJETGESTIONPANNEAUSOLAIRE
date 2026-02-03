@@ -1,0 +1,15 @@
+# 1. Empêcher de lister les fichiers (Index of...)
+Options -Indexes
+
+# 2. Protéger le fichier de connexion à la BDD
+# Personne ne doit pouvoir télécharger ce fichier !
+<Files "dbconnection.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# 3. Protéger le fichier .htaccess lui-même
+<Files ".htaccess">
+    Order Allow,Deny
+    Deny from all
+</Files>

@@ -1,22 +1,22 @@
 <?php
 global $dbh;
-// On récupère les valeurs envoyées par Docker
-// Attention : 'DB_HOST' doit correspondre exactement au nom dans docker-compose
+
+// Récupération des variables d'environnement
 $servername = getenv('DB_HOST');
 $username   = getenv('DB_USER');
 $password   = getenv('DB_PASSWORD');
 $dbname     = getenv('DB_NAME');
-// Sécurité : On vérifie si une des variables est vide
+
+// Vérification de sécurité
 if (!$servername || !$username || !$password || !$dbname) {
     die("Erreur critique : Variables d'environnement manquantes !");
 }
 
 try {
-$dbh = new PDO("mysql:host=$servername;dbname=$dbname" , $username , $password);
-
-# S'il y a une erreur on va la "catch"
+    $dbh = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
+    // On active les erreurs SQL pour voir les problèmes
+    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    # le "die" tue le script et affiche le message d'erreur à l'écran
-    die("Erreur " . $e->getMessage());
+    die("Erreur de connexion : " . $e->getMessage());
 }
-?>
+

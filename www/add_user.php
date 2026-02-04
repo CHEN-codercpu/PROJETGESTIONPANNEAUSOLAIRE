@@ -143,7 +143,10 @@ $message = "✅ Utilisateur ajouté avec succès !";
         <?php endif; ?>
 
         <form method="post">
-            </form>
+            <input type="text" name="new_user" placeholder="Nom d'utilisateur" required>
+            <input type="password" name="new_pass" placeholder="Mot de passe" required>
+            <button type="submit">Ajouter l'utilisateur</button>
+        </form>
 
     </div>
 </div>

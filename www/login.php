@@ -21,6 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // On enregistre l'utilisateur dans la session
             $_SESSION['user_id'] = $user['idUtilisateurs'];
             $_SESSION['pseudo'] = $user['nom_utilisateur'];
+	    $_SESSION['role'] = $user['role'];
             
             // HOP ! On redirige vers le tableau de bord
             header("Location: index.php");

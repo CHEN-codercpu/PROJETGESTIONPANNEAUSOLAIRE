@@ -17,6 +17,7 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) >
     header("Location: login.php?msg=timeout");
     exit();
 }
+
 // On met à jour l'heure de dernière activité
 $_SESSION['last_activity'] = time();
 
@@ -173,6 +174,12 @@ $req_history = $dbh->query('SELECT * FROM Mesures ORDER BY idMesures DESC LIMIT 
     <div class="astre"></div>
 
     <a href="logout.php" class="logout-btn">Déconnexion ⏻</a>
+<?php if(isset($_SESSION['role']) && $_SESSION['role'] == 'Administrateur'): ?>
+    if($_SESSION['role'] == 'Administrateur')
+{
+    <a href="add_user.php" class="logout-btn" style="top: 70px; background-color: #e67e22;">⚙️ Nouvel Utilisateur</a>
+    <?php endif; ?>
+}
 
     <h1>Tableau de Bord Solaire</h1>
     <div class="sub-title">Bienvenue, <strong><?php echo htmlspecialchars($_SESSION['pseudo']); ?></strong></div>

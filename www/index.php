@@ -24,21 +24,48 @@ $_SESSION['last_activity'] = time();
 // 3. Anti-Vol de Session (Renouveler l'ID à chaque chargement)
 session_regenerate_id(true);
 
-// --- LOGIQUE 1 : GESTION DU CIEL (Heure) ---
-// On récupère l'heure actuelle (0 à 23)
-$heure = date('H');
-$classe_ciel = ""; // Variable pour le CSS
+// --- LOGIQUE 1 : GESTION DU CIEL (ASTRONOMIQUE) ---
 
-if ($heure >= 6 && $heure < 10) {
-    $classe_ciel = "matin"; // Aube orangée
-} elseif ($heure >= 10 && $heure < 18) {
-    $classe_ciel = "jour";  // Grand ciel bleu
-} elseif ($heure >= 18 && $heure < 21) {
-    $classe_ciel = "soir";  // Coucher de soleil violet/orange
+// 1. Tes Coordonnées GPS (Ici réglé sur Nancy, France)
+$latitude = 48.69;
+$longitude = 6.18;
+
+// 2. PHP demande au soleil : "A quelle heure tu te lèves aujourd'hui ?"
+// Cette fonction magique renvoie des "Timestamps" (le nombre de secondes)
+$sun_info = date_sun_info(time(), $latitude, $longitude);
+
+$lever = $sun_info['sunrise'];
+$coucher = $sun_info['sunset'];
+$maintenant = time(); // L'heure actuelle exacte
+
+// 3. On définit une période de "Transition" (45 minutes = 2700 secondes)
+// C'est le temps où le ciel reste orange avant/après le soleil.
+$transition = 2700; 
+
+$classe_ciel = "";
+
+// --- LA LOGIQUE INTELLIGENTE ---
+
+if ($maintenant < ($lever - $transition)) {
+    // Il fait nuit noire (Avant l'aube)
+    $classe_ciel = "nuit";
+
+} elseif ($maintenant >= ($lever - $transition) && $maintenant < ($lever + $transition)) {
+    // C'est l'AUBE (45min avant le lever -> 45min après)
+    $classe_ciel = "matin"; 
+
+} elseif ($maintenant >= ($lever + $transition) && $maintenant < ($coucher - $transition)) {
+    // C'est le GRAND JOUR (Le soleil est haut)
+    $classe_ciel = "jour"; 
+
+} elseif ($maintenant >= ($coucher - $transition) && $maintenant < ($coucher + $transition)) {
+    // C'est le CRÉPUSCULE (45min avant le coucher -> 45min après)
+    $classe_ciel = "soir"; 
+
 } else {
-    $classe_ciel = "nuit";  // Nuit noire étoilée
+    // Il fait nuit noire (Après le crépuscule)
+    $classe_ciel = "nuit";
 }
-
 // --- LOGIQUE 2 : RÉCUPÉRATION DES DONNÉES ---
 
 // A. La dernière mesure (Pour les cartes)

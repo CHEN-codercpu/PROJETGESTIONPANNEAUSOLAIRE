@@ -2,7 +2,7 @@
 FROM php:apache
 
 # On installe les pilotes pour que PHP puisse parler à la base de données
-# (On installe pdo_mysql car tu utilises new PDO dans ton code !)
+# (On installe pdo_mysql car j'utilise new PDO dans mon code !)
 RUN docker-php-ext-install mysqli pdo pdo_mysql && docker-php-ext-enable mysqli pdo_mysql
 
 # On active le module de réécriture d'URL (bon réflexe à avoir)

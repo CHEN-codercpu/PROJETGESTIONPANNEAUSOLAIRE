@@ -86,7 +86,7 @@ if ($mesure) {
 
 // B. L'historique (Pour le tableau du bas)
 // On récupère les 10 dernières lignes
-$req_history = $dbh->query('SELECT * FROM Mesures ORDER BY idMesures DESC LIMIT 10');
+$req_history = $dbh->query('SELECT * FROM Mesures ORDER BY date_heure DESC LIMIT 20');
 ?>
 
 <!DOCTYPE html>
@@ -189,11 +189,37 @@ $req_history = $dbh->query('SELECT * FROM Mesures ORDER BY idMesures DESC LIMIT 
         th { background-color: #f2f2f2; color: #333; border-radius: 5px; }
         tr:hover { background-color: #f9f9f9; }
         
-        /* Responsive : Sur mobile, on réduit la police du tableau */
+	/* Responsive : Sur mobile, on adapte l'affichage */
         @media (max-width: 600px) {
+            /* 1. Tableau plus petit */
             th, td { padding: 5px; font-size: 0.8em; }
+            
+            /* 2. Cartes en 2 colonnes */
+            .card { width: 45%; }
+
+            /* 3. On rapetisse le soleil/lune et on le colle aux bords */
+            .astre {
+                width: 50px;
+                height: 50px;
+                top: 15px;
+                left: 15px;
+            }
+            body.nuit .astre, body.soir .astre {
+                right: 15px; /* On annule les 100px qui le poussaient au centre */
+            }
+
+            /* 4. On empile les boutons proprement au centre */
+            .logout-btn {
+                position: relative;
+                display: block; /* Force le bouton à prendre sa propre ligne */
+                width: max-content; /* Adapte la largeur au texte */
+                margin: 10px auto; /* Centre le bouton horizontalement */
+                top: auto !important; /* Écrase le top: 70px du bouton Admin */
+                right: auto;
+            }
         }
     </style> 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="<?php echo $classe_ciel; ?>">
@@ -231,9 +257,9 @@ $req_history = $dbh->query('SELECT * FROM Mesures ORDER BY idMesures DESC LIMIT 
             <div class="valeur"><?php echo $lux; ?> <span class="unite">lx</span></div>
         </div>
     </div>
-
+	<canvas id="monGraphique"></canvas>
     <div class="history-container">
-        <h3>📊 Historique (10 dernières mesures)</h3>
+        <h3>📊 Historique (20 dernières mesures)</h3>
         <table>
             <thead>
                 <tr>
@@ -243,18 +269,68 @@ $req_history = $dbh->query('SELECT * FROM Mesures ORDER BY idMesures DESC LIMIT 
                     <th>Temp (°C)</th>
                 </tr>
             </thead>
-            <tbody>
-                <?php while ($row = $req_history->fetch(PDO::FETCH_ASSOC)): ?>
-                <tr>
-                    <td><?php echo date("H:i:s", strtotime($row['date_heure'])); ?></td>
-                    <td><?php echo $row['tension_panneau']; ?> V</td>
-                    <td><?php echo $row['tension_batterie']; ?> V</td>
-                    <td><?php echo $row['temp_batterie']; ?> °C</td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
+<tbody>
+    <?php
+    // 1. On initialise les listes UNE SEULE FOIS avant la boucle
+    $heures = [];
+    $tensions = [];
+    $tensions_b = [];
+
+    // 2. UNE SEULE BOUCLE pour tout faire : le tableau ET le graphique
+    while ($row = $req_history->fetch(PDO::FETCH_ASSOC)):
+        // On stocke les données pour le futur graphique
+        $heures[] = date("H:i:s", strtotime($row['date_heure']));
+        $tensions[] = $row['tension_panneau'];
+        $tensions_b[] = $row['tension_batterie'];
+    ?>
+    <tr>
+        <td><?php echo date("H:i:s", strtotime($row['date_heure'])); ?></td>
+        <td><?php echo $row['tension_panneau']; ?> V</td>
+        <td><?php echo $row['tension_batterie']; ?> V</td>
+        <td><?php echo $row['temp_batterie']; ?> °C</td>
+    </tr>
+    <?php endwhile; ?>
+</tbody>
+
         </table>
     </div>
+<script>
+const ctx = document.getElementById('monGraphique');
 
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: <?php echo json_encode(array_reverse($heures)); ?>,
+        datasets: [
+            {
+                label: 'Tension Panneau (V)',
+                data: <?php echo json_encode(array_reverse($tensions)); ?>,
+                borderColor: '#f3904f', // Orange
+                backgroundColor: 'rgba(243, 144, 79, 0.1)',
+                tension: 0.3,
+                fill: true
+            },
+            {
+                // --- AJOUT DE LA DEUXIÈME LIGNE ---
+                label: 'Tension Batterie (V)',
+                data: <?php echo json_encode(array_reverse($tensions_b)); ?>,
+                borderColor: '#2ecc71', // Vert (couleur classique pour une batterie)
+                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                tension: 0.3,
+                fill: true
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Comparatif Énergie : Panneau vs Batterie'
+            }
+        }
+    }
+});
+</script>
 </body>
 </html>

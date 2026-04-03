@@ -1,0 +1,47 @@
+services:
+  db:
+    image: mariadb:11.8.5-ubi9
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql 
+    environment:
+      MARIADB_DATABASE: db_panneau_solaire
+      MARIADB_USER: Soleil
+      # INDISPENSABLE : Le mot de passe maître pour que la DB démarre
+      MARIADB_ROOT_PASSWORD: ciel
+      MARIADB_PASSWORD: meow
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-u", "root", "-pciel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+  
+  web:
+    build: .
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./www:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+    # C'EST ICI QU'IL FAUT METTRE LES INFOS POUR LE PHP !
+    # Attention : PAS d'espaces autour du signe "="
+    environment:
+      - DB_HOST=db
+      - DB_NAME=db_panneau_solaire
+      - DB_USER=root
+      - DB_PASSWORD=ciel
+
+volumes:
+  mariadb_data:

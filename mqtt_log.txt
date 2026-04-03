@@ -1,0 +1,5 @@
+nohup: ignoring input
+/home/admin/projet_panneau_solaire/PROJETGESTIONPANNEAUSOLAIRE/pont_mqtt_db.py:54: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+  client = mqtt.Client()
+/home/admin/projet_panneau_solaire/PROJETGESTIONPANNEAUSOLAIRE/pont_mqtt_db.py:61: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+  client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1) # Le script reste allumé pour ne rien rater

@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id'])) {
 // 2. SÉCURITÉ : Vérifier si on est Administrateur
 if ($_SESSION['role'] !== 'Administrateur') {
     // Si pas admin, on arrête tout
-    exit("⛔ Accès refusé : Vous n'êtes pas administrateur.");
+    exit("Accès refusé : Vous n'êtes pas administrateur.");
 }
 
 // 3. TRAITEMENT DU FORMULAIRE
@@ -30,14 +30,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->execute([$_POST['new_user'], $hash]);
             
             // Si on arrive ici, c'est que ça a marché !
-            $message = "✅ Utilisateur ajouté avec succès !";
+            $message = "Utilisateur ajouté avec succès !";
 
         } catch (PDOException $e) {
             // Gestion des erreurs (Doublon ou autre)
             if ($e->getCode() == 23000 || $e->errorInfo[1] == 1062) {
-                $message = "❌ Ce nom d'utilisateur est déjà pris !";
+                $message = "Ce nom d'utilisateur est déjà pris !";
             } else {
-                $message = "❌ Erreur technique : " . $e->getMessage();
+                $message = "Erreur technique : " . $e->getMessage();
             }
         }
     }
